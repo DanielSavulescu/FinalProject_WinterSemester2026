@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -12,9 +13,7 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 public class Library {
-    private List<Item> itemsInStore;
-    private List<Item> borrowedItems;
-    private List<Item> lostItems;
+    public static List<Item> items;
 
     /**
      * permits the user to borrow items
@@ -22,46 +21,27 @@ public class Library {
      * @param item the item to be borrowed
      * @param user the user borrowing the item
      */
-    public void borrowItems(Item item, User user) {
+    public void borrowItems(Item item, User user) throws IllegalArgumentException {
+        if (!items.contains(item)) {
+            throw new IllegalArgumentException("Item is currently unavailable");
+        }
+
         if (user instanceof Student) {
             if (!(item instanceof Book)) {
-                System.out.println("Students can only borrow books");
+                throw new IllegalArgumentException("Students can only borrow books");
             }
-
-            try {
-                if (user.userBorrowedItems.size() == 5) {
-                    throw new RuntimeException("Students can only borrow up to 5 books");
-                } else if (!itemsInStore.contains(item)) {
-                    throw new RuntimeException("No copies left");
-                } else {
-                    itemsInStore.remove(item);
-                    user.userBorrowedItems.add(item);
-                    borrowedItems.add(item);
-                }
-            } catch (RuntimeException e) {
-                e.getMessage();
+            if (user.getUserBorrowedItems().size() >= 5) {
+                throw new IllegalArgumentException("Student borrow limit reached");
+            }
+        } else if (user instanceof Teacher) {
+            if (user.getUserBorrowedItems().size() >= 10) {
+                throw new IllegalArgumentException("Teacher borrow limit reached");
             }
         }
 
-        if (user instanceof Teacher) {
-            try {
-                if (user.userBorrowedItems.size() == 10) {
-                    throw new RuntimeException("Teachers can only borrow up to 10 items");
-                } else {
-                    itemsInStore.remove(item);
-                    user.userBorrowedItems.add(item);
-                    borrowedItems.add(item);
-                }
-            } catch (RuntimeException e) {
-                e.getMessage();
-            }
-        }
-
-        if (user instanceof Admin) {
-            itemsInStore.remove(item);
-            user.userBorrowedItems.add(item);
-            borrowedItems.add(item);
-        }
+        items.remove(item);
+        user.userBorrowedItems.add(item);
+        item.setStatus(Item.Status.BORROWED);
     }
 
     /**
@@ -72,7 +52,23 @@ public class Library {
      */
     public void returnItems(Item item, User user) {
         user.userBorrowedItems.remove(item);
-        borrowedItems.remove(item);
-        itemsInStore.add(item);
+        items.add(item);
+        item.setStatus(Item.Status.AVAILABLE);
+    }
+
+    public List<Item> searchStream(String keyWord) {
+        String lowerCaseKey = keyWord.toLowerCase();
+
+        List<Item> searchedItems = new ArrayList<>(items);
+
+        return searchedItems.stream()
+                .filter(item -> {
+                    boolean authorContainsKeyWord = false;
+                    if (item instanceof Book) {
+                        authorContainsKeyWord = ((Book) item).getAuthor().toLowerCase().contains(lowerCaseKey);
+                    }
+                    return item.getTitle().toLowerCase().contains(lowerCaseKey) || authorContainsKeyWord;
+                })
+                .toList();
     }
 }
