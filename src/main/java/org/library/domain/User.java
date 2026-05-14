@@ -16,13 +16,13 @@ public abstract class User {
     @Setter
     protected String name;
     @Setter
-    protected List<Item> items;
+    protected List<Item> userBorrowedItems;
 
     private static int nextId = 1;
 
     public User(String name) {
         this.id = String.format("%04d", nextId++);
         this.name = name;
-        this.items = new ArrayList<>();
+        this.userBorrowedItems = new ArrayList<>();
     }
 }
