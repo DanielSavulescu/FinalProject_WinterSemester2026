@@ -16,7 +16,7 @@ public class Admin extends User implements Reportable {
     public void reportInStore() {
         for (Item item : Library.items) {
             if (item.getStatus().equals(Item.Status.AVAILABLE)) {
-                System.out.println(item);
+                System.out.println(item.getId() + "-" + item.getTitle() + ": Available");
             }
         }
     }
@@ -25,7 +25,7 @@ public class Admin extends User implements Reportable {
     public void reportBorrowed() {
         for (Item item : Library.items) {
             if (item.getStatus().equals(Item.Status.BORROWED)) {
-                System.out.println(item);
+                System.out.println(item.getId() + "-" + item.getTitle() + ": Borrowed");
             }
         }
     }
@@ -34,7 +34,7 @@ public class Admin extends User implements Reportable {
     public void reportLost() {
         for (Item item : Library.items) {
             if (item.getStatus().equals(Item.Status.LOST)) {
-                System.out.println(item);
+                System.out.println(item.getId() + "-" + item.getTitle() + ": Borrowed");
             }
         }
     }
