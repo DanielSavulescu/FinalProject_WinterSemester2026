@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Comparator;
+
 @EqualsAndHashCode
 @ToString
 @Getter
@@ -27,5 +29,12 @@ public abstract class Item {
         AVAILABLE,
         BORROWED,
         LOST
+    }
+
+    public static class ItemComparator implements Comparator<Item> {
+        @Override
+        public int compare(Item o1, Item o2) {
+            return o1.getId().compareTo(o2.getId()) == 0 ? o1.getTitle().compareToIgnoreCase(o2.title) : o1.getId().compareTo(o2.getId());
+        }
     }
 }
