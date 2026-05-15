@@ -55,4 +55,9 @@ public class Admin extends User implements Reportable {
             }
         }
     }
+
+    public void backup() {
+        Library.loadUsers();
+        Library.loadUsers();
+    }
 }
