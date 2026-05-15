@@ -56,8 +56,11 @@ public class Admin extends User implements Reportable {
         }
     }
 
+    /**
+     * backs up all the users and books into another file each
+     */
     public void backup() {
         Library.loadUsers();
-        Library.loadUsers();
+        Library.loadBooks();
     }
 }
