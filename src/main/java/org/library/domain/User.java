@@ -27,6 +27,6 @@ public abstract class User implements Comparable<User> {
 
     @Override
     public int compareTo(User o) {
-        return id.compareTo(o.id) == 0 ? name.compareToIgnoreCase(o.name) : id.compareTo(o.id);
+        return name.compareToIgnoreCase(o.name) == 0 ? id.compareTo(o.id) : name.compareToIgnoreCase(o.name);
     }
 }
