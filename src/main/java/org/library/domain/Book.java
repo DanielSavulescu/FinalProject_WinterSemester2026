@@ -6,12 +6,13 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter
-@Setter
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class Book extends Item {
     private String isbn;
+    @Setter
     private String author;
+    @Setter
     private String genre;
 
     public Book(String title, Status status, String isbn, String author, String genre) {
