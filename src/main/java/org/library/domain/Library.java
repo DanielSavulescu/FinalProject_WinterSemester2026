@@ -26,7 +26,7 @@ public class Library {
      * @param item the item to be borrowed
      * @param user the user borrowing the item
      */
-    public void borrowItems(Item item, User user) throws IllegalArgumentException {
+    public static void borrowItems(Item item, User user) throws IllegalArgumentException {
         if (!items.contains(item)) {
             throw new IllegalArgumentException("Item is currently unavailable");
         }
@@ -51,10 +51,11 @@ public class Library {
 
     /**
      * permits the user to return an item
+     *
      * @param item the item to be returned
      * @param user the user returning the item
      */
-    public void returnItems(Item item, User user) {
+    public static void returnItems(Item item, User user) {
         user.userBorrowedItems.remove(item);
         items.add(item);
         item.setStatus(Item.Status.AVAILABLE);
@@ -62,39 +63,35 @@ public class Library {
 
     /**
      * enables the user to search for an item using a key word using a stream
-     * @param keyWord the key word used for the search
-     * @return a list of the items containing the key word
+     *
+     * @param keyWord the key word to search for the item
+     * @return the results of the search
      */
-    public List<Item> searchStream(String keyWord) {
+    public static List<Item> searchStream(String keyWord) {
         String lowerCaseKey = keyWord.toLowerCase();
+        Set<String> seenTitles = new HashSet<>();
 
-        List<Item> searchedItems = new ArrayList<>(items);
-        Set<String> seenTitles = new TreeSet<>();
-
-        return searchedItems.stream()
+        return items.stream()
                 .filter(item -> {
-                    boolean authorContainsKeyWord = false;
-                    if (item instanceof Book) {
-                        authorContainsKeyWord = ((Book) item).getAuthor().toLowerCase().contains(lowerCaseKey);
+                    boolean matchesKeyword = item.getTitle().toLowerCase().contains(lowerCaseKey);
+                    if (!matchesKeyword && item instanceof Book) {
+                        matchesKeyword = ((Book) item).getAuthor().toLowerCase().contains(lowerCaseKey);
                     }
-                    seenTitles.add(item.getTitle().toLowerCase());
-                    return item.getTitle().toLowerCase().contains(lowerCaseKey) || authorContainsKeyWord;
-                })
-                .filter(item -> {
-                    return (!seenTitles.contains(item.getTitle()));
+                    return matchesKeyword && seenTitles.add(item.getTitle().toLowerCase());
                 })
                 .toList();
     }
 
     /**
      * enables the user to search for an item using a key word using recursion
-     * @param keyword the keyword to search for the item
-     * @param index the index to check
-     * @param results the results of the search so far
+     *
+     * @param keyword    the keyword to search for the item
+     * @param index      the index to check
+     * @param results    the results of the search so far
      * @param seenTitles the titles that have already been checked
      * @return the list of all the items containing that key word
      */
-    public List<Item> searchRecursive(String keyword, int index, List<Item> results, Set<String> seenTitles) {
+    public static List<Item> searchRecursive(String keyword, int index, List<Item> results, Set<String> seenTitles) {
         if (index == items.size()) {
             return results;
         }
@@ -118,33 +115,32 @@ public class Library {
 
     /**
      * initializes the users from a user file
+     *
      * @param userPath the path for the user file
      */
-    public void initializeUsers(String userPath) {
+    public static void initializeUsers(String userPath) {
         File file = new File(userPath);
 
         try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNext()) {
                 String line = scanner.nextLine();
                 String[] elements = line.split(",");
-
                 /*
                 structure for a line should be like so: Occupation,Name
                 example -> Student, Name
                  */
-                for (String str : elements) {
-                    String name = elements[1];
-                    if (elements[0].equalsIgnoreCase("student")) {
-                        Student student = new Student(name);
-                        users.add(student);
-                    } else if (elements[0].equalsIgnoreCase("teacher")) {
-                        Teacher teacher = new Teacher(name);
-                        users.add(teacher);
-                    } else if (elements[0].equalsIgnoreCase("admin")) {
-                        Admin admin = new Admin(name);
-                    } else {
-                        throw new RuntimeException("User indeterminable");
-                    }
+                String name = elements[1];
+                if (elements[0].equalsIgnoreCase("student")) {
+                    Student student = new Student(name);
+                    users.add(student);
+                } else if (elements[0].equalsIgnoreCase("teacher")) {
+                    Teacher teacher = new Teacher(name);
+                    users.add(teacher);
+                } else if (elements[0].equalsIgnoreCase("admin")) {
+                    Admin admin = new Admin(name);
+                    users.add(admin);
+                } else {
+                    throw new RuntimeException("User indeterminable");
                 }
             }
         } catch (FileNotFoundException e) {
@@ -154,9 +150,10 @@ public class Library {
 
     /**
      * initializes the items from a user file
+     *
      * @param itemsPath the path for the item file
      */
-    public void initializeItems(String itemsPath) {
+    public static void initializeItems(String itemsPath) {
         File file = new File(itemsPath);
 
         try (Scanner scanner = new Scanner(file)) {
@@ -171,36 +168,34 @@ public class Library {
                 Magazine,title,status,issueNumber,publisher
                 example -> Student, Name
                  */
-                for (String str : elements) {
-                    String title = elements[1].toLowerCase();
-                    Item.Status status;
+                String title = elements[1].toLowerCase();
+                Item.Status status;
 
-                    if (elements[2].equalsIgnoreCase("borrowed")) {
-                        status = Item.Status.BORROWED;
-                    } else if (elements[2].equalsIgnoreCase("available")) {
-                        status = Item.Status.AVAILABLE;
-                    } else {
-                        status = Item.Status.LOST;
+                if (elements[2].equalsIgnoreCase("borrowed")) {
+                    status = Item.Status.BORROWED;
+                } else if (elements[2].equalsIgnoreCase("available")) {
+                    status = Item.Status.AVAILABLE;
+                } else {
+                    status = Item.Status.LOST;
+                }
+
+                switch (elements[0]) {
+                    case "book" -> {
+                        Book book = new Book(title, status, elements[3], elements[4], elements[5]);
+                        items.add(book);
                     }
 
-                    switch(elements[0]) {
-                        case "book" -> {
-                            Book book = new Book(title, status, elements[3], elements[4], elements[5]);
-                            items.add(book);
-                        }
-
-                        case "dvd" -> {
-                            Dvd dvd = new Dvd(title, status, elements[3], Integer.parseInt(elements[4]));
-                            items.add(dvd);
-                        }
-
-                        case "magazine" -> {
-                            Magazine magazine = new Magazine(title, status, Integer.parseInt(elements[3]), elements[4]);
-                            items.add(magazine);
-                        }
-
-                        default -> throw new RuntimeException("Item indeterminable");
+                    case "dvd" -> {
+                        Dvd dvd = new Dvd(title, status, elements[3], Integer.parseInt(elements[4]));
+                        items.add(dvd);
                     }
+
+                    case "magazine" -> {
+                        Magazine magazine = new Magazine(title, status, Integer.parseInt(elements[3]), elements[4]);
+                        items.add(magazine);
+                    }
+
+                    default -> throw new RuntimeException("Item indeterminable");
                 }
             }
         } catch (FileNotFoundException e) {
@@ -208,7 +203,10 @@ public class Library {
         }
     }
 
-    public void loadUsers() {
+    /**
+     * loads users into a csv file
+     */
+    public static void loadUsers() {
         File file = new File(Constants.USERS_CSV_PATH);
 
         try (FileWriter fileWriter = new FileWriter(file, true)) {
@@ -226,13 +224,17 @@ public class Library {
                 for (Item item : user.getUserBorrowedItems()) {
                     fileWriter.write(item.getId() + "-" + item.getTitle());
                 }
+                fileWriter.write("\n");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void loadBooks() {
+    /**
+     * loads books into a csv file
+     */
+    public static void loadBooks() {
         File file = new File(Constants.BOOKS_CSV_PATH);
 
         try (FileWriter fileWriter = new FileWriter(file, true)) {
@@ -242,7 +244,7 @@ public class Library {
                     fileWriter.write(item.getTitle() + ",");
                     fileWriter.write(((Book) item).getIsbn() + ",");
                     fileWriter.write(((Book) item).getAuthor() + ",");
-                    fileWriter.write(((Book) item).getGenre() + ",");
+                    fileWriter.write(((Book) item).getGenre() + "\n");
                 }
             }
         } catch (IOException e) {
