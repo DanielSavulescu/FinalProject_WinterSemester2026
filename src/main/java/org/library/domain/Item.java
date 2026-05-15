@@ -34,7 +34,7 @@ public abstract class Item {
     public static class ItemComparator implements Comparator<Item> {
         @Override
         public int compare(Item o1, Item o2) {
-            return o1.getId().compareTo(o2.getId()) == 0 ? o1.getTitle().compareToIgnoreCase(o2.title) : o1.getId().compareTo(o2.getId());
+            return o1.getTitle().compareToIgnoreCase(o2.title) == 0 ? o1.getId().compareTo(o2.getId()) : o1.getTitle().compareToIgnoreCase(o2.title);
         }
     }
 }
